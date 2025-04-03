@@ -79,9 +79,3 @@ To run the Streamlit frontend:
 ```bash
 streamlit run frontend/app.py
 ```
-
-## Development Timeline
-
-1. April 7th to April 11th: Setup of frontend, backend, and cloud environments, followed by initial input parsing implementation
-2. April 14th to April 18th: Integration of Langchain and language models for AI-driven analysis
-3. April 21st to April 23rd: Finalization of frontend development and project closure
