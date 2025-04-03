@@ -1,31 +1,12 @@
-from typing import List, Optional
-
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, HttpUrl
 
+from backend.schemas.schemas import LicenseInfo, LicenseReport, GithubRepo
 from backend.utils.logger_utils import get_logger
 
 router = APIRouter()
 
 # Set up logger
 logger = get_logger(__name__)
-
-
-class GithubRepo(BaseModel):
-    url: HttpUrl
-
-
-class LicenseInfo(BaseModel):
-    package_name: str
-    license_type: Optional[str] = None
-    permissions: Optional[List[str]] = None
-    limitations: Optional[List[str]] = None
-    obligations: Optional[List[str]] = None
-
-
-class LicenseReport(BaseModel):
-    packages: List[LicenseInfo]
-    resources_used: Optional[List[str]] = None
 
 
 @router.post("/analyze", response_model=LicenseReport)
@@ -43,7 +24,7 @@ async def analyze_github_repo(repo: GithubRepo):
 
         # For demonstration purposes, we'll use sample data
         packages = ["numpy", "pandas", "requests"]
-        logger.debug(f"Extracted packages: {packages}")
+        logger.info(f"Extracted packages: {packages}")
 
         # Analyze licenses for each package
         license_info = []
@@ -53,15 +34,7 @@ async def analyze_github_repo(repo: GithubRepo):
             "OpenAI GPT-4 for license analysis",
         ]
 
-        # Initialize license analyzer when needed for actual analysis
-        # from ..models.license_analyzer import LicenseAnalyzer
-        # analyzer = LicenseAnalyzer()
-
         for package in packages:
-            logger.debug(f"Analyzing license for package: {package}")
-            # In a real implementation, we would use the analyzer to get real license data
-            # license_data = analyzer.get_package_license(package)
-
             # Placeholder for license analysis
             license_info.append(
                 LicenseInfo(

@@ -1,14 +1,11 @@
-import base64
 import os
-import shutil
 import tempfile
 import uuid
-from typing import List, Optional
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from pydantic import BaseModel
 
-from backend.utils.dependency_parser import DependencyParser
+from backend.schemas.schemas import LicenseInfo, LicenseReport
+from backend.services.dependency_parser import DependencyParser
 from backend.utils.logger_utils import get_logger
 
 router = APIRouter()
@@ -19,19 +16,6 @@ logger = get_logger(__name__)
 # Create a temporary directory for file uploads
 TEMP_DIR = os.path.join(tempfile.gettempdir(), "licenSage-uploads")
 os.makedirs(TEMP_DIR, exist_ok=True)
-
-
-class LicenseInfo(BaseModel):
-    package_name: str
-    license_type: Optional[str] = None
-    permissions: Optional[List[str]] = None
-    limitations: Optional[List[str]] = None
-    obligations: Optional[List[str]] = None
-
-
-class LicenseReport(BaseModel):
-    packages: List[LicenseInfo]
-    resources_used: Optional[List[str]] = None
 
 
 @router.post("/upload", response_model=LicenseReport)
@@ -48,10 +32,14 @@ async def upload_dependency_file(file: UploadFile = File(...)):
         content = await file.read()
         if isinstance(content, bytes):
             # Check if content might be UTF-16 encoded (common issue with Windows text files)
-            if content.startswith(b'\xff\xfe') or content.startswith(b'\xfe\xff') or b'\x00' in content[:20]:
+            if (
+                content.startswith(b"\xff\xfe")
+                or content.startswith(b"\xfe\xff")
+                or b"\x00" in content[:20]
+            ):
                 # Attempt to decode as UTF-16
                 try:
-                    decoded_content = content.decode('utf-16')
+                    decoded_content = content.decode("utf-16")
                     with open(file_path, "w", encoding="utf-8") as buffer:
                         buffer.write(decoded_content)
                 except UnicodeDecodeError:
@@ -93,7 +81,7 @@ async def upload_dependency_file(file: UploadFile = File(...)):
         # For demonstration purposes, create placeholder license info
         license_info = []
         for package in packages:  # Limit to 5 packages for demo
-            logger.debug(f"Analyzing license for package: {package}")
+            logger.info(f"Analyzing license for package: {package}")
             # In a real implementation, we would use a license analyzer to get real license data
             # from ..models.license_analyzer import LicenseAnalyzer
             # analyzer = LicenseAnalyzer()
@@ -117,7 +105,7 @@ async def upload_dependency_file(file: UploadFile = File(...)):
         # Clean up the temporary file
         try:
             os.remove(file_path)
-            logger.debug(f"Removed temporary file: {file_path}")
+            logger.info(f"Removed temporary file: {file_path}")
         except Exception as e:
             logger.warning(f"Failed to remove temporary file {file_path}: {str(e)}")
 
